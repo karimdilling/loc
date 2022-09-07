@@ -48,7 +48,7 @@ func getFilenames() ([]string, error) {
 				return err
 			}
 
-			validFile := strings.HasSuffix(info.Name(), ".go") || strings.HasSuffix(info.Name(), ".txt") ||
+			validFile := strings.HasSuffix(info.Name(), ".go") ||
 				strings.HasSuffix(info.Name(), ".c") || strings.HasSuffix(info.Name(), ".cpp") ||
 				strings.HasSuffix(info.Name(), ".cc") || strings.HasSuffix(info.Name(), ".cs") ||
 				strings.HasSuffix(info.Name(), ".h") || strings.HasSuffix(info.Name(), ".hpp") ||
