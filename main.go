@@ -41,39 +41,39 @@ func getFilenames() ([]string, error) {
 	var filenames []string
 	// Entering a dot as argument means scan whole directory, including subdirectories
 	for _, rootDir := range os.Args[1:] {
-		filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
+		filepath.WalkDir(rootDir, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 				return err
 			}
 
-			validFile := strings.HasSuffix(info.Name(), ".go") ||
-				strings.HasSuffix(info.Name(), ".c") || strings.HasSuffix(info.Name(), ".cpp") ||
-				strings.HasSuffix(info.Name(), ".cc") || strings.HasSuffix(info.Name(), ".cs") ||
-				strings.HasSuffix(info.Name(), ".h") || strings.HasSuffix(info.Name(), ".hpp") ||
-				strings.HasSuffix(info.Name(), ".py") || strings.HasSuffix(info.Name(), ".java") ||
-				strings.HasSuffix(info.Name(), ".js") || strings.HasSuffix(info.Name(), ".jsx") ||
-				strings.HasSuffix(info.Name(), ".ts") || strings.HasSuffix(info.Name(), ".php") ||
-				strings.HasSuffix(info.Name(), ".rs") || strings.HasSuffix(info.Name(), ".rb") ||
-				strings.HasSuffix(info.Name(), ".R")
+			validFile := strings.HasSuffix(d.Name(), ".go") ||
+				strings.HasSuffix(d.Name(), ".c") || strings.HasSuffix(d.Name(), ".cpp") ||
+				strings.HasSuffix(d.Name(), ".cc") || strings.HasSuffix(d.Name(), ".cs") ||
+				strings.HasSuffix(d.Name(), ".h") || strings.HasSuffix(d.Name(), ".hpp") ||
+				strings.HasSuffix(d.Name(), ".py") || strings.HasSuffix(d.Name(), ".java") ||
+				strings.HasSuffix(d.Name(), ".js") || strings.HasSuffix(d.Name(), ".jsx") ||
+				strings.HasSuffix(d.Name(), ".ts") || strings.HasSuffix(d.Name(), ".php") ||
+				strings.HasSuffix(d.Name(), ".rs") || strings.HasSuffix(d.Name(), ".rb") ||
+				strings.HasSuffix(d.Name(), ".R")
 
 			// Skip unwanted directories (build, hidden etc.)
-			hiddenDir := info.IsDir() && strings.HasPrefix(info.Name(), ".") && info.Name() != rootDir
+			hiddenDir := d.IsDir() && strings.HasPrefix(d.Name(), ".") && d.Name() != rootDir
 			skipDir := false
 			for _, dir := range subDirsToSkip {
-				if info.Name() == dir {
+				if d.Name() == dir {
 					skipDir = true
 					break
 				}
 				skipDir = false
 			}
-			if info.IsDir() && (skipDir || hiddenDir) {
+			if d.IsDir() && (skipDir || hiddenDir) {
 				fmt.Printf("Skipping unwanted dir: %+v \n", path)
 				return filepath.SkipDir
 			}
 
 			// Only append valid source files to the list
-			if !info.IsDir() && validFile {
+			if !d.IsDir() && validFile {
 				filenames = append(filenames, path)
 			}
 			return nil
