@@ -40,8 +40,7 @@ func getFilenames() ([]string, error) {
 
 	var filenames []string
 	// Entering a dot as argument means scan whole directory, including subdirectories
-	if os.Args[1] == "." {
-		rootDir := "."
+	for _, rootDir := range os.Args[1:] {
 		filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
 				fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
@@ -79,9 +78,6 @@ func getFilenames() ([]string, error) {
 			}
 			return nil
 		})
-	} else {
-		// @TODO: Make folder names possible too, e.g. "loc src" searches the src directory
-		filenames = append(filenames, os.Args[1:]...)
 	}
 
 	return filenames, nil
