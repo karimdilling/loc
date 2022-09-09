@@ -90,12 +90,29 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 	effectiveCount := 0
 	for scanner.Scan() {
 		lineCount++
+		effectiveCount++
 		text := scanner.Text()
 		text = strings.TrimSpace(text)
-		// blank lines are empty strings after trimming whitespace
-		if !strings.HasPrefix(text, "//") { //@TODO handle multiline comments
-			if text != "" {
-				effectiveCount++
+
+		// Handle single line comments
+		if strings.HasPrefix(text, "//") {
+			effectiveCount--
+		}
+		// check for blank lines
+		if text == "" {
+			effectiveCount--
+		}
+
+		// Handle multi line comments
+		if strings.HasPrefix(text, "/*") {
+			// search for closing "*/" in  the same line
+			for i, char := range text {
+				if string(char) == "*" {
+					if string(text[i+1]) == "/" {
+						effectiveCount--
+						break
+					}
+				}
 			}
 		}
 	}
