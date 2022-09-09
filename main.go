@@ -17,7 +17,7 @@ func main() {
 		return
 	}
 
-	filesAndLines := make(map[string]int)
+	filesAndLines := make(map[string][2]int)
 	for _, filename := range filenames {
 		file, err := os.Open(filename)
 		if err != nil {
@@ -83,24 +83,39 @@ func getFilenames() ([]string, error) {
 	return filenames, nil
 }
 
-func countLines(file *os.File, fileMap map[string]int) {
+// Counts overall lines and the effective source code lines with comments and blank lines stripped out
+func countLines(file *os.File, fileMap map[string][2]int) {
 	scanner := bufio.NewScanner(file)
 	lineCount := 0
+	effectiveCount := 0
 	for scanner.Scan() {
 		lineCount++
+		text := scanner.Text()
+		text = strings.TrimSpace(text)
+		// blank lines are empty strings after trimming whitespace
+		if !strings.HasPrefix(text, "//") { //@TODO handle multiline comments
+			if text != "" {
+				effectiveCount++
+			}
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Printf("%s in file: %v\n", err, file.Name())
 	}
-	fileMap[file.Name()] = lineCount
+
+	lineCountValues := [2]int{lineCount, effectiveCount}
+	fileMap[file.Name()] = lineCountValues
 }
 
-func printLineNumbers(filesAndLines map[string]int) {
+func printLineNumbers(filesAndLines map[string][2]int) {
 	totalCount := 0
+	effectiveTotalCount := 0
 	for filename, count := range filesAndLines {
-		fmt.Printf("%v: %v\n", filename, count)
-		totalCount += count
+		fmt.Printf("%v: total %v, effective %v\n", filename, count[0], count[1])
+		totalCount += count[0]
+		effectiveTotalCount += count[1]
 	}
 
 	fmt.Println("The total line count is", totalCount)
+	fmt.Println("The effective line count is", effectiveTotalCount)
 }
