@@ -88,34 +88,59 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 	scanner := bufio.NewScanner(file)
 	lineCount := 0
 	effectiveCount := 0
+	skipLine := false
+	skipMultipleLines := false
+
 	for scanner.Scan() {
 		lineCount++
-		effectiveCount++
+
 		text := scanner.Text()
 		text = strings.TrimSpace(text)
 
-		// Handle single line comments
-		if strings.HasPrefix(text, "//") {
-			effectiveCount--
-		}
-		// check for blank lines
-		if text == "" {
-			effectiveCount--
+		if strings.HasPrefix(text, "//") { // Handle single line comments
+			skipLine = true
+			skipMultipleLines = false
+		} else if text == "" { // check for blank lines
+			skipLine = true
+			skipMultipleLines = false
+		} else if strings.HasPrefix(text, "/*") { // check for multiline comments
+			skipLine = true
+			if strings.Contains(text, "*/") && !strings.Contains(text, "\"*/\"") &&
+				!strings.Contains(text, "'*/'") { // check for close on the same line
+				skipMultipleLines = false
+			} else {
+				skipMultipleLines = true // switch to skip following lines until comment closes
+			}
+		} else if strings.Contains(text, "/*") && !strings.Contains(text, "\"/*\"") &&
+			!strings.Contains(text, "'/*'") { // multiline comment that starts after some code in that line
+			skipLine = false
+			skipMultipleLines = true
+		} else {
+			skipLine = false
 		}
 
-		// Handle multi line comments
-		if strings.HasPrefix(text, "/*") {
-			// search for closing "*/" in  the same line
-			for i, char := range text {
-				if string(char) == "*" {
-					if string(text[i+1]) == "/" {
-						effectiveCount--
-						break
-					}
+		// check to see if we are still in a comment
+		if skipMultipleLines {
+			if strings.Contains(text, "*/") && !strings.Contains(text, "\"*/\"") &&
+				!strings.Contains(text, "'*/'") {
+				skipLine = true
+				skipMultipleLines = false
+			} else {
+				skipMultipleLines = true
+				if !strings.HasPrefix(text, "/*") && strings.Contains(text, "/*") &&
+					!strings.Contains(text, "\"/*\"") && !strings.Contains(text, "'/*'") {
+					skipLine = false
+				} else {
+					skipLine = true
 				}
 			}
 		}
+
+		if !skipLine {
+			effectiveCount++
+		}
 	}
+
 	if err := scanner.Err(); err != nil {
 		fmt.Printf("%s in file: %v\n", err, file.Name())
 	}
