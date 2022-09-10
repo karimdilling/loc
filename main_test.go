@@ -14,7 +14,7 @@ func TestCountLines(t *testing.T) {
 	defer file.Close()
 
 	countLines(file, filesAndLines)
-	expected := [2]int{23, 9}
+	expected := [2]int{26, 12}
 	if filesAndLines["testfiles/test.go"] == expected {
 		t.Logf("Test SUCCESS: Total and effective lines counted correctly")
 	} else {

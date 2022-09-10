@@ -5,7 +5,10 @@ import "fmt"
 
 /* Added a comment here */
 func main() {
-	fmt.Println("Hello world!")
+	fmt.Println("Hello world! /*") // also ignore "/*" inside a string when parsing for comments
+	fmt.Println("*/ Test")
+	fmt.Println("/*")
+	fmt.Println("'/*'")
 	abc()
 }
 
