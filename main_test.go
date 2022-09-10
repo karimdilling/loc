@@ -6,18 +6,51 @@ import (
 )
 
 func TestCountLines(t *testing.T) {
-	filesAndLines := make(map[string][2]int)
-	file, err := os.Open("testfiles/test.go")
-	if err != nil {
-		t.Errorf("Test FAILED: Could not open file %v", file)
+	// Only languages with different comment styles need to be tested (e.g. Go has the same comments as C/C++ etc.)
+	files := [...]string{
+		"testfiles/test.go", "testfiles/test.rs", "testfiles/test.py",
+		"testfiles/test.php", "testfiles/test.rb", "testfiles/test.R",
 	}
-	defer file.Close()
+	os.Args = []string{"cmd"}
+	for i := 0; i < len(files); i++ {
+		os.Args = append(os.Args, files[i])
+	}
+	filenames, err := getFilenames()
+	if err != nil {
+		t.Errorf("Test FAILED: Could not open file")
+	}
 
-	countLines(file, filesAndLines)
-	expected := [2]int{26, 12}
-	if filesAndLines["testfiles/test.go"] == expected {
-		t.Logf("Test SUCCESS: Total and effective lines counted correctly")
-	} else {
-		t.Errorf("Test FAILED: Expected %v, got %v", expected, filesAndLines["testfiles/test.go"])
+	filesAndLines := make(map[string][2]int)
+	for _, filename := range filenames {
+		file, err := os.Open(filename)
+		if err != nil {
+			t.Errorf("Test FAILED: Could not open file %v", file)
+		}
+		defer file.Close()
+		countLines(file, filesAndLines)
+	}
+
+	for file := range filesAndLines {
+		var expected [2]int
+		switch file {
+		case "testfiles/test.go":
+			expected = [2]int{26, 12}
+		case "testfiles/test.rs":
+			expected = [2]int{61, 9}
+		case "testfiles/test.py":
+			expected = [2]int{25, 9}
+		case "testfiles/test.php":
+			expected = [2]int{15, 5}
+		case "testfiles/test.rb":
+			expected = [2]int{10, 2}
+		case "testfiles/test.R":
+			expected = [2]int{6, 1}
+		}
+
+		if filesAndLines[file] == expected {
+			t.Logf("%v SUCCESS: Expected %v, got %v", file, expected, filesAndLines[file])
+		} else {
+			t.Errorf("%v FAILED: Expected %v, got %v", file, expected, filesAndLines[file])
+		}
 	}
 }

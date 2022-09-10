@@ -9,6 +9,8 @@ func main() {
 	fmt.Println("*/ Test")
 	fmt.Println("/*")
 	fmt.Println("'/*'")
+	a := 20 + /* 30 */ 100
+	fmt.Println(a)
 	abc()
 }
 
