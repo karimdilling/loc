@@ -1,16 +1,14 @@
 // This is a file to run the tests for the countLines() function on
-package main
+package testfiles
 
 import "fmt"
 
 /* Added a comment here */
-func main() {
+func print_something() {
 	fmt.Println("Hello world! /*") // also ignore "/*" inside a string when parsing for comments
 	fmt.Println("*/ Test")
 	fmt.Println("/*")
 	fmt.Println("'/*'")
-	a := 20 + /* 30 */ 100
-	fmt.Println(a)
 	abc()
 }
 
