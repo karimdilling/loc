@@ -107,6 +107,9 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 			skipLine = true
 			if strings.Contains(text, "*/") && !strings.Contains(text, "\"*/\"") &&
 				!strings.Contains(text, "'*/'") { // check for close on the same line
+				if !strings.HasSuffix(text, "/") {
+					skipLine = false
+				}
 				skipMultipleLines = false
 			} else {
 				skipMultipleLines = true // switch to skip following lines until comment closes
@@ -114,7 +117,11 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 		} else if strings.Contains(text, "/*") && !strings.Contains(text, "\"/*\"") &&
 			!strings.Contains(text, "'/*'") { // multiline comment that starts after some code in that line
 			skipLine = false
-			skipMultipleLines = true
+			if strings.HasSuffix(text, "*/") {
+				skipMultipleLines = false
+			} else {
+				skipMultipleLines = true
+			}
 		} else {
 			skipLine = false
 		}
@@ -123,8 +130,13 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 		if skipMultipleLines {
 			if strings.Contains(text, "*/") && !strings.Contains(text, "\"*/\"") &&
 				!strings.Contains(text, "'*/'") {
-				skipLine = true
 				skipMultipleLines = false
+				if !strings.HasSuffix(text, "*/") {
+					skipLine = false
+
+				} else {
+					skipLine = true
+				}
 			} else {
 				skipMultipleLines = true
 				if !strings.HasPrefix(text, "/*") && strings.Contains(text, "/*") &&
