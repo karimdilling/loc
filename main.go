@@ -97,56 +97,7 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 		text := scanner.Text()
 		text = strings.TrimSpace(text)
 
-		if strings.HasPrefix(text, "//") { // Handle single line comments
-			skipLine = true
-			skipMultipleLines = false
-		} else if text == "" { // check for blank lines
-			skipLine = true
-			skipMultipleLines = false
-		} else if strings.HasPrefix(text, "/*") { // check for multiline comments
-			skipLine = true
-			if strings.Contains(text, "*/") && !strings.Contains(text, "\"*/\"") &&
-				!strings.Contains(text, "'*/'") { // check for close on the same line
-				if !strings.HasSuffix(text, "/") {
-					skipLine = false
-				}
-				skipMultipleLines = false
-			} else {
-				skipMultipleLines = true // switch to skip following lines until comment closes
-			}
-		} else if strings.Contains(text, "/*") && !strings.Contains(text, "\"/*\"") &&
-			!strings.Contains(text, "'/*'") { // multiline comment that starts after some code in that line
-			skipLine = false
-			if strings.HasSuffix(text, "*/") {
-				skipMultipleLines = false
-			} else {
-				skipMultipleLines = true
-			}
-		} else {
-			skipLine = false
-		}
-
-		// check to see if we are still in a comment
-		if skipMultipleLines {
-			if strings.Contains(text, "*/") && !strings.Contains(text, "\"*/\"") &&
-				!strings.Contains(text, "'*/'") {
-				skipMultipleLines = false
-				if !strings.HasSuffix(text, "*/") {
-					skipLine = false
-
-				} else {
-					skipLine = true
-				}
-			} else {
-				skipMultipleLines = true
-				if !strings.HasPrefix(text, "/*") && strings.Contains(text, "/*") &&
-					!strings.Contains(text, "\"/*\"") && !strings.Contains(text, "'/*'") {
-					skipLine = false
-				} else {
-					skipLine = true
-				}
-			}
-		}
+		parseCommentsCStyle(&text, &effectiveCount, &skipLine, &skipMultipleLines)
 
 		if !skipLine {
 			effectiveCount++
@@ -159,6 +110,62 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 
 	lineCountValues := [2]int{lineCount, effectiveCount}
 	fileMap[file.Name()] = lineCountValues
+}
+
+func parseCommentsCStyle(text *string, effectiveCount *int, skipLine *bool, skipMultipleLines *bool) {
+	if strings.HasPrefix(*text, "//") { // Handle single line comments
+		*skipLine = true
+		*skipMultipleLines = false
+	} else if *text == "" { // check for blank lines
+		*skipLine = true
+		*skipMultipleLines = false
+	} else if strings.HasPrefix(*text, "/*") { // check for multiline comments
+		*skipLine = true
+		if strings.Contains(*text, "*/") && !strings.Contains(*text, "\"*/") &&
+			!strings.Contains(*text, "*/\"") && !strings.Contains(*text, "'*/") &&
+			!strings.Contains(*text, "*/'") { // check for close on the same line
+			if !strings.HasSuffix(*text, "/") {
+				*skipLine = false
+			}
+			*skipMultipleLines = false
+		} else {
+			*skipMultipleLines = true // switch to skip following lines until comment closes
+		}
+	} else if strings.Contains(*text, "/*") && !strings.Contains(*text, "\"/*") &&
+		!strings.Contains(*text, "/*\"") && !strings.Contains(*text, "'/*") &&
+		!strings.Contains(*text, "*/'") { // multiline comment that starts after some code in that line
+		*skipLine = false
+		if strings.HasSuffix(*text, "*/") {
+			*skipMultipleLines = false
+		} else {
+			*skipMultipleLines = true
+		}
+	} else {
+		*skipLine = false
+	}
+
+	// check to see if we are still in a comment
+	if *skipMultipleLines {
+		if strings.Contains(*text, "*/") && !strings.Contains(*text, "\"*/") &&
+			!strings.Contains(*text, "*/\"") && !strings.Contains(*text, "'*/") &&
+			!strings.Contains(*text, "*/'") {
+			*skipMultipleLines = false
+			if !strings.HasSuffix(*text, "*/") {
+				*skipLine = false
+			} else {
+				*skipLine = true
+			}
+		} else {
+			*skipMultipleLines = true
+			if !strings.HasPrefix(*text, "/*") && strings.Contains(*text, "/*") &&
+				!strings.Contains(*text, "\"/*") && !strings.Contains(*text, "/*\"") &&
+				!strings.Contains(*text, "'/*") && !strings.Contains(*text, "*/'") {
+				*skipLine = false
+			} else {
+				*skipLine = true
+			}
+		}
+	}
 }
 
 func printLineNumbers(filesAndLines map[string][2]int) {
