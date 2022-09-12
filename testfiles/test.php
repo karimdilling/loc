@@ -11,5 +11,5 @@ lines
 $x = 5 /* + 15 */ + 5;
 echo $x; /* ... 
 .... */
-echo "/* Hello world";
+echo "/* Hello world"; # inline comment
 ?>
