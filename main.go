@@ -91,13 +91,34 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 	skipLine := false
 	skipMultipleLines := false
 
+	cLikeComments := strings.HasSuffix(file.Name(), ".go") || strings.HasSuffix(file.Name(), ".c") ||
+		strings.HasSuffix(file.Name(), ".cpp") || strings.HasSuffix(file.Name(), ".cc") ||
+		strings.HasSuffix(file.Name(), ".h") || strings.HasSuffix(file.Name(), ".hpp") ||
+		strings.HasSuffix(file.Name(), ".java") || strings.HasSuffix(file.Name(), ".js") ||
+		strings.HasSuffix(file.Name(), ".jsx") || strings.HasSuffix(file.Name(), ".ts") ||
+		strings.HasSuffix(file.Name(), ".rs")
+	phpComments := strings.HasSuffix(file.Name(), ".php")
+	pythonComments := strings.HasSuffix(file.Name(), ".py")
+	rubyComments := strings.HasSuffix(file.Name(), ".rb")
+	rComments := strings.HasSuffix(file.Name(), ".R")
+
 	for scanner.Scan() {
 		lineCount++
 
 		text := scanner.Text()
 		text = strings.TrimSpace(text)
 
-		parseCommentsCStyle(&text, &effectiveCount, &skipLine, &skipMultipleLines)
+		if cLikeComments {
+			parseCFile(&text, &effectiveCount, &skipLine, &skipMultipleLines)
+		} else if phpComments {
+			parsePHPFile(&text, &effectiveCount, &skipLine, &skipMultipleLines)
+		} else if pythonComments {
+			parsePythonFile(&text, &effectiveCount, &skipLine, &skipMultipleLines)
+		} else if rubyComments {
+			parseRubyFile(&text, &effectiveCount, &skipLine, &skipMultipleLines)
+		} else if rComments {
+			parseRFile(&text, &effectiveCount, &skipLine)
+		}
 
 		if !skipLine {
 			effectiveCount++
@@ -112,7 +133,95 @@ func countLines(file *os.File, fileMap map[string][2]int) {
 	fileMap[file.Name()] = lineCountValues
 }
 
-func parseCommentsCStyle(text *string, effectiveCount *int, skipLine *bool, skipMultipleLines *bool) {
+func parseRFile(text *string, effectiveCount *int, skipLine *bool) {
+	if strings.HasPrefix(*text, "#") {
+		*skipLine = true
+	} else if *text == "" {
+		*skipLine = true
+	} else {
+		*skipLine = false
+	}
+}
+
+func parseRubyFile(text *string, effectiveCount *int, skipLine *bool, skipMultipleLines *bool) {
+	if *skipMultipleLines {
+		if strings.HasPrefix(*text, "=end") {
+			*skipMultipleLines = false
+			if strings.HasSuffix(*text, "=end") { // check if code is following after ending the comment
+				*skipLine = true
+			} else {
+				*skipLine = false
+			}
+		} else {
+			*skipLine = true
+			*skipMultipleLines = true
+		}
+		return
+	}
+
+	if strings.HasPrefix(*text, "#") {
+		*skipLine = true
+		*skipMultipleLines = false
+	} else if *text == "" {
+		*skipLine = true
+		*skipMultipleLines = false
+	} else if strings.HasPrefix(*text, "=begin") { // multiline comment begins
+		*skipLine = true
+		*skipMultipleLines = true
+	} else {
+		*skipLine = false
+		*skipMultipleLines = false
+	}
+}
+
+func parsePythonFile(text *string, effectiveCount *int, skipLine *bool, skipMultipleLines *bool) {
+	if *skipMultipleLines {
+		*skipLine = true
+		if strings.Contains(*text, "\"\"\"") {
+			*skipMultipleLines = false
+		} else {
+			*skipMultipleLines = true
+		}
+		return
+	}
+
+	if strings.HasPrefix(*text, "#") {
+		*skipLine = true
+		*skipMultipleLines = false
+	} else if *text == "" {
+		*skipLine = true
+		*skipMultipleLines = false
+	} else if *text == "\"\"\"" {
+		*skipLine = true
+		if *skipMultipleLines {
+			*skipMultipleLines = false
+		} else {
+			*skipMultipleLines = true
+		}
+	} else if strings.HasPrefix(*text, "\"\"\"") { // docstring on one line
+		*skipLine = true
+		if strings.HasSuffix(*text, "\"\"\"") { // closes on the same line
+			*skipMultipleLines = false
+		} else {
+			*skipMultipleLines = true
+		}
+	} else {
+		*skipLine = false
+		*skipMultipleLines = false
+	}
+}
+
+func parsePHPFile(text *string, effectiveCount *int, skipLine *bool, skipMultipleLines *bool) {
+	// PHP comments are similar to C style comments + the "#" as comment
+	parseCFile(text, effectiveCount, skipLine, skipMultipleLines)
+	// also include "#" as comment
+	if strings.HasPrefix(*text, "#") {
+		*skipLine = true
+		*skipMultipleLines = false
+	}
+}
+
+func parseCFile(text *string, effectiveCount *int, skipLine *bool, skipMultipleLines *bool) {
 	if strings.HasPrefix(*text, "//") { // Handle single line comments
 		*skipLine = true
 		*skipMultipleLines = false
