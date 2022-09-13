@@ -43,11 +43,11 @@ func TestCountLines(t *testing.T) {
 		case "testfiles/test.rs":
 			expected = [2]int{61, 9}
 		case "testfiles/test.py":
-			expected = [2]int{25, 9}
+			expected = [2]int{27, 10}
 		case "testfiles/test.php":
 			expected = [2]int{15, 5}
 		case "testfiles/test.rb":
-			expected = [2]int{10, 2}
+			expected = [2]int{14, 3}
 		case "testfiles/test.R":
 			expected = [2]int{6, 1}
 		}

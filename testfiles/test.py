@@ -9,16 +9,18 @@ def abc():
 
 abc()
 
+"""And a docstring"""
+
 print("Hello world! #")
 print('# Test')
 print("")
 print("""hel
-lo""")
-
-"""And a docstring"""
+""""lo""")
 
 """A multiline
 docstring"""
+
+print("In between two docstrings")
 
 """
 Another multiline docstring
