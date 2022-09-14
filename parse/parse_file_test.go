@@ -1,4 +1,4 @@
-package main
+package parse
 
 import (
 	"os"
@@ -16,7 +16,7 @@ func TestCountLines(t *testing.T) {
 	for i := 0; i < len(files); i++ {
 		os.Args = append(os.Args, files[i])
 	}
-	filenames, err := getFilenames()
+	filenames, err := GetFilenames()
 	if err != nil {
 		t.Errorf("Test FAILED: Could not open file")
 	}
@@ -28,7 +28,7 @@ func TestCountLines(t *testing.T) {
 			t.Errorf("Test FAILED: Could not open file %v", file.Name())
 		}
 		defer file.Close()
-		countLines(file, filesAndLines)
+		CountLines(file, filesAndLines)
 	}
 
 	for file := range filesAndLines {
