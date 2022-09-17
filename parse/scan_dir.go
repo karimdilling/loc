@@ -21,7 +21,7 @@ func GetFilenames() ([]string, error) {
 	for _, rootDir := range os.Args[1:] {
 		filepath.WalkDir(rootDir, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
-				fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+				fmt.Printf("Could not access file %q\n", path)
 				return err
 			}
 
