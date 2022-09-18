@@ -11,6 +11,7 @@ import (
 func main() {
 	flag.Parse()
 	if options.Help {
+		options.PrintProgramDescription()
 		flag.PrintDefaults()
 		return
 	}

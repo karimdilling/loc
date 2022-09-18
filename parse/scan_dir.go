@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"loc/options"
 	"path/filepath"
 	"strings"
 )
@@ -46,7 +47,9 @@ func GetFilenames() ([]string, error) {
 				skipDir = false
 			}
 			if d.IsDir() && (skipDir || hiddenDir) {
-				fmt.Printf("Skipping unwanted dir: %+v \n", path)
+				if options.Verbose {
+					fmt.Printf("Skipping unwanted dir: %+v \n", path)
+				}
 				return filepath.SkipDir
 			}
 
