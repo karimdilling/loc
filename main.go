@@ -1,12 +1,20 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"loc/options"
 	"loc/parse"
 	"os"
 )
 
 func main() {
+	flag.Parse()
+	if options.Help {
+		flag.PrintDefaults()
+		return
+	}
+
 	filenames, err := parse.GetFilenames()
 	if err != nil {
 		fmt.Println(err)
@@ -31,7 +39,9 @@ func printLineNumbers(filesAndLines map[string][2]int) {
 	totalCount := 0
 	effectiveTotalCount := 0
 	for filename, count := range filesAndLines {
-		fmt.Printf("%v: total %v, effective %v\n", filename, count[0], count[1])
+		if options.Verbose {
+			fmt.Printf("%v: total %v, effective %v\n", filename, count[0], count[1])
+		}
 		totalCount += count[0]
 		effectiveTotalCount += count[1]
 	}

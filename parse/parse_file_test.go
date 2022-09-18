@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"flag"
 	"os"
 	"testing"
 )
@@ -16,9 +17,11 @@ func TestCountLines(t *testing.T) {
 	for i := 0; i < len(files); i++ {
 		os.Args = append(os.Args, files[i])
 	}
+	flag.Parse()
+
 	filenames, err := GetFilenames()
 	if err != nil {
-		t.Errorf("Test FAILED: Could not open file")
+		t.Errorf("Test FAILED: Could not open file because of error: %v", err)
 	}
 
 	filesAndLines := make(map[string][2]int)

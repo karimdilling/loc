@@ -2,15 +2,15 @@ package parse
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"strings"
 )
 
 func GetFilenames() ([]string, error) {
-	if len(os.Args) < 2 {
+	if flag.NArg() < 1 {
 		return nil, errors.New("a filename or folder ('.' for the current directory) needs to be entered")
 	}
 
@@ -18,7 +18,7 @@ func GetFilenames() ([]string, error) {
 
 	var filenames []string
 	// Entering a dot as argument means scan whole directory, including subdirectories
-	for _, rootDir := range os.Args[1:] {
+	for _, rootDir := range flag.Args() {
 		filepath.WalkDir(rootDir, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				fmt.Printf("Could not access file %q\n", path)
