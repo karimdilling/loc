@@ -7,6 +7,8 @@ import (
 
 var Verbose bool
 var Help bool
+var HeaderOnly bool // only count the lines in header files (C/C++ only)
+var SourceOnly bool // only count *.c, *.cpp, *.cc files without header files (C/C++ only)
 
 func init() {
 	flag.BoolVar(&Help, "h", false, "Prints help output")
@@ -14,6 +16,9 @@ func init() {
 
 	flag.BoolVar(&Verbose, "v", false, "Prints the line numbers for every single source file")
 	flag.BoolVar(&Verbose, "verbose", false, "Prints the line numbers for every single source file")
+
+	flag.BoolVar(&HeaderOnly, "header-only", false, "Only count lines in header files (C/C++ only)")
+	flag.BoolVar(&SourceOnly, "source-only", false, "Only count lines in source files (C/C++ only)")
 }
 
 func PrintProgramDescription() {

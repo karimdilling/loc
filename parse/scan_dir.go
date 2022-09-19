@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"loc/options"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -26,15 +27,28 @@ func GetFilenames() ([]string, error) {
 				return err
 			}
 
-			validFile := strings.HasSuffix(d.Name(), ".go") ||
-				strings.HasSuffix(d.Name(), ".c") || strings.HasSuffix(d.Name(), ".cpp") ||
-				strings.HasSuffix(d.Name(), ".cc") || strings.HasSuffix(d.Name(), ".cs") ||
-				strings.HasSuffix(d.Name(), ".h") || strings.HasSuffix(d.Name(), ".hpp") ||
-				strings.HasSuffix(d.Name(), ".py") || strings.HasSuffix(d.Name(), ".java") ||
-				strings.HasSuffix(d.Name(), ".js") || strings.HasSuffix(d.Name(), ".jsx") ||
-				strings.HasSuffix(d.Name(), ".ts") || strings.HasSuffix(d.Name(), ".php") ||
-				strings.HasSuffix(d.Name(), ".rs") || strings.HasSuffix(d.Name(), ".rb") ||
-				strings.HasSuffix(d.Name(), ".R")
+			if options.HeaderOnly && options.SourceOnly {
+				fmt.Println("The options 'header-only' and 'source-only' are mutually exclusive.")
+				os.Exit(0)
+			}
+
+			var validFile bool
+			if options.SourceOnly {
+				validFile = strings.HasSuffix(d.Name(), ".c") || strings.HasSuffix(d.Name(), ".cpp") ||
+					strings.HasSuffix(d.Name(), ".cc")
+			} else if options.HeaderOnly {
+				validFile = strings.HasSuffix(d.Name(), ".h") || strings.HasSuffix(d.Name(), ".hpp")
+			} else {
+				validFile = strings.HasSuffix(d.Name(), ".go") ||
+					strings.HasSuffix(d.Name(), ".c") || strings.HasSuffix(d.Name(), ".cpp") ||
+					strings.HasSuffix(d.Name(), ".cc") || strings.HasSuffix(d.Name(), ".cs") ||
+					strings.HasSuffix(d.Name(), ".h") || strings.HasSuffix(d.Name(), ".hpp") ||
+					strings.HasSuffix(d.Name(), ".py") || strings.HasSuffix(d.Name(), ".java") ||
+					strings.HasSuffix(d.Name(), ".js") || strings.HasSuffix(d.Name(), ".jsx") ||
+					strings.HasSuffix(d.Name(), ".ts") || strings.HasSuffix(d.Name(), ".php") ||
+					strings.HasSuffix(d.Name(), ".rs") || strings.HasSuffix(d.Name(), ".rb") ||
+					strings.HasSuffix(d.Name(), ".R")
+			}
 
 			// Skip unwanted directories (build, hidden etc.)
 			hiddenDir := d.IsDir() && strings.HasPrefix(d.Name(), ".") && d.Name() != rootDir
